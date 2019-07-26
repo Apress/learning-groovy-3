@@ -1,0 +1,69 @@
+// Tested using Gradle 4.8.1
+// see settings.gradle for how to include subprojects
+// run on the command line like this:
+// ./gradlew tasks      --list all tasks
+// ./gradlew printName  --prints names of subprojects
+// ./gradlew styles     --puts css in ratpack-example/src/ratpack/public/styles
+// ./gradlew run        --runs the Ratpack app
+apply plugin: 'java'
+apply plugin: 'groovy'
+
+sourceCompatibility = '1.8'
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+    jcenter()
+}
+
+dependencies {
+    compile 'com.google.guava:guava:19.0'
+    compile 'org.bitbucket.dollar:dollar:1.0-beta3'
+    // Updated to latest version of groovy:
+    compile 'org.codehaus.groovy:groovy:3.0.0-alpha-4'
+    testCompile group: 'junit', name: 'junit', version: '4.+'
+    testCompile "org.mockito:mockito-core:1.9.5"
+    
+    compile project(':subproject1')
+    compile project(':subproject2')
+}
+
+// ext block defines any properties you want to use. it's useful for defining versions
+ext {
+    myVersion = '1.4.5'
+    outputDir = file('lib/x86')
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '4.8.1'
+}
+
+// << is an alias for doLast. it takes a closure which gets run when the task runs.
+task upper << {
+    String someString = "test"
+    println "Original: $someString"
+    println "Uppercase: " + someString.toUpperCase()
+}
+
+allprojects {
+    apply plugin: 'groovy'
+}
+// overrides the default groovy dir (src/main/groovy) and excludes some files
+sourceSets {
+    main {
+        groovy {
+            srcDirs = ['./']
+            excludes = ['ratpack-example', 'ratpack-example2', 'smaug.groovy', 'actors.groovy']
+        }
+    }
+}
+
+// this runs during the first pass every time
+task exploring {
+    println sourceSets.main.properties
+}
+// prints the value of myVersion
+task version << {
+    println myVersion
+}
+
